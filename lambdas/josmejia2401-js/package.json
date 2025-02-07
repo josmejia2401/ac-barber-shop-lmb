@@ -1,0 +1,28 @@
+{
+    "name": "josmejia2401-js",
+    "version": "1.0.0",
+    "description": "Libreria con elementos comunes JS",
+    "main": "index.js",
+    "type": "commonjs",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "install:prod": "npm install --production"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/josmejia2401/josmejia2401-js.git"
+    },
+    "author": "jose.mejia",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/josmejia2401/josmejia2401-js/issues"
+    },
+    "homepage": "https://github.com/josmejia2401/josmejia2401-js#readme",
+    "dependencies": {
+        "joi": "17.13.3",
+        "jsonwebtoken": "9.0.2"
+    },
+    "devDependencies": {
+        "@aws-sdk/client-dynamodb": "3.743.0"
+    }
+}
