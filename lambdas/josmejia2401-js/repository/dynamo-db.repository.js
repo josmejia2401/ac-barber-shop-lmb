@@ -10,35 +10,6 @@ const constants = require('../lib/constants');
 const logger = require('../lib/logger');
 const client = new DynamoDBClient({ apiVersion: "2012-08-10", region: constants.constants.REGION });
 
-function buildItem(element, schema) {
-    if (element === undefined || element === null) {
-        return undefined;
-    }
-    if (schema === undefined || schema === null) {
-        return element;
-    }
-    const output = {};
-    const schemaKeys = Object.keys(schema);
-    for (const schemaKey of schemaKeys) {
-        output[`${schemaKey}`] = element[`${schemaKey}`];
-    }
-    return output;
-}
-
-function buildItems(elements, schema) {
-    if (elements === undefined || elements === null) {
-        return undefined;
-    }
-    if (schema === undefined || schema === null) {
-        return elements;
-    }
-    const output = [];
-    for (const element of elements) {
-        output.push(buildItem(element));
-    }
-    return output;
-}
-
 async function getItem(payload = {
     key: {},
     projectionExpression: undefined,
@@ -57,12 +28,20 @@ async function getItem(payload = {
             requestId: options.requestId,
             message: params
         });
-        const resultData = await client.send(new GetItemCommand(params));
+        const response = await client.send(new GetItemCommand(params));
         logger.info({
             requestId: options.requestId,
-            message: resultData.Item !== undefined
+            message: results.Item !== undefined
         });
-        return buildItem(resultData.Item, options.schema);
+        return {
+            data: response.Item,
+            metadata: {
+                totalScannedCount: 1,
+                totalItemsMatched: 1,
+                totalConsumedCapacity: response.ConsumedCapacity,
+                lastEvaluatedKey: undefined
+            }
+        };
     } catch (err) {
         logger.error({
             requestId: options.requestId,
@@ -100,35 +79,197 @@ async function scan(payload = {
             requestId: options.requestId,
             message: JSON.stringify(params)
         });
-        const resultData = {
-            results: [],
-            lastEvaluatedKey: null
-        };
+        let results = [];
+        let totalScannedCount = 0;
+        let totalItemsMatched = 0;
+        let totalConsumedCapacity = 0;
+        let lastEvaluatedKey = undefined;
         if (payload.limit !== undefined && payload.limit !== null) {
-            let items;
+            let response;
             do {
-                items = await client.send(new ScanCommand(params));
-                if (items.Items && items.Items.length > 0) {
-                    resultData.results.push(...buildItems(items.Items, options.schema));
+                response = await client.send(new ScanCommand(params));
+                if (response.Items && response.Items.length > 0) {
+                    results.push(...response.Items);
                 }
-                params.ExclusiveStartKey = items.LastEvaluatedKey;
-                resultData.lastEvaluatedKey = items.LastEvaluatedKey;
-            } while (typeof items.LastEvaluatedKey !== "undefined" && resultData.results.length < payload.limit);
+                totalScannedCount += response.ScannedCount;
+                totalItemsMatched += response.Count;
+                totalConsumedCapacity += response.ConsumedCapacity;
+                lastEvaluatedKey = response.LastEvaluatedKey;
+                params.ExclusiveStartKey = lastEvaluatedKey;
+            } while (typeof lastEvaluatedKey !== "undefined" && results.length < payload.limit);
         } else {
-            const items = await client.send(new ScanCommand(params));
-            if (items.Items && items.Items.length > 0) {
-                resultData.results.push(...buildItems(items.Items, options.schema));
+            const response = await client.send(new ScanCommand(params));
+            if (response.Items && response.Items.length > 0) {
+                results.push(...response.Items);
             }
-            resultData.lastEvaluatedKey = items.LastEvaluatedKey;
+            totalScannedCount += response.ScannedCount;
+            totalItemsMatched += response.Count;
+            totalConsumedCapacity += response.ConsumedCapacity;
+            lastEvaluatedKey = response.LastEvaluatedKey;
         }
         logger.info({
             requestId: options.requestId,
             message: {
-                size: resultData.results.length,
-                lastEvaluatedKey: resultData.lastEvaluatedKey,
+                size: results.length,
+                lastEvaluatedKey: lastEvaluatedKey,
             },
         });
-        return resultData;
+        return {
+            data: results,
+            metadata: {
+                totalScannedCount: totalScannedCount,
+                totalItemsMatched: totalItemsMatched,
+                totalConsumedCapacity: totalConsumedCapacity,
+                lastEvaluatedKey: lastEvaluatedKey
+            }
+        };
+    } catch (err) {
+        logger.error({
+            requestId: options.requestId,
+            message: err
+        });
+        throw err;
+    }
+}
+
+async function scanCount(payload = {
+    expressionAttributeValues: {},
+    expressionAttributeNames: {},
+    projectionExpression: undefined,
+    filterExpression: undefined,
+    tableName: undefined
+}, options = {
+    requestId: undefined,
+    schema: undefined,
+}) {
+    try {
+        const params = {
+            ExpressionAttributeValues: payload.expressionAttributeValues,
+            ExpressionAttributeNames: payload.expressionAttributeNames,
+            ProjectionExpression: payload.projectionExpression,
+            FilterExpression: payload.filterExpression,
+            TableName: payload.tableName,
+            Select: 'COUNT'
+        };
+        logger.debug({
+            requestId: options.requestId,
+            message: JSON.stringify(params)
+        });
+        let results = [];
+        let totalScannedCount = 0;
+        let totalItemsMatched = 0;
+        let totalConsumedCapacity = 0;
+        let lastEvaluatedKey = undefined;
+        let response;
+        do {
+            response = await client.send(new ScanCommand(params));
+            if (response.Items && response.Items.length > 0) {
+                results.push(...response.Items);
+            }
+            totalScannedCount += response.ScannedCount;
+            totalItemsMatched += response.Count;
+            totalConsumedCapacity += response.ConsumedCapacity;
+            lastEvaluatedKey = response.LastEvaluatedKey;
+            params.ExclusiveStartKey = lastEvaluatedKey;
+        } while (typeof lastEvaluatedKey !== "undefined");
+        logger.info({
+            requestId: options.requestId,
+            message: {
+                size: results.length,
+                lastEvaluatedKey: lastEvaluatedKey,
+            },
+        });
+        return {
+            data: results,
+            metadata: {
+                totalScannedCount: totalScannedCount,
+                totalItemsMatched: totalItemsMatched,
+                totalConsumedCapacity: totalConsumedCapacity,
+                lastEvaluatedKey: lastEvaluatedKey
+            }
+        };
+    } catch (err) {
+        logger.error({
+            requestId: options.requestId,
+            message: err
+        });
+        throw err;
+    }
+}
+
+async function parallelScan(payload = {
+    expressionAttributeValues: {},
+    expressionAttributeNames: {},
+    projectionExpression: undefined,
+    filterExpression: undefined,
+    limit: undefined,
+    lastEvaluatedKey: undefined,
+    tableName: undefined,
+    totalSegments: 4,
+    segment: 1,
+    limit: undefined
+}, options = {
+    requestId: undefined,
+    schema: undefined,
+}) {
+    try {
+        const params = {
+            ExpressionAttributeValues: payload.expressionAttributeValues,
+            ExpressionAttributeNames: payload.expressionAttributeNames,
+            ProjectionExpression: payload.projectionExpression,
+            FilterExpression: payload.filterExpression,
+            TableName: payload.tableName,
+            Limit: payload.limit,
+            ExclusiveStartKey: payload.lastEvaluatedKey,
+            Segment: payload.segment,
+            TotalSegments: payload.totalSegments,
+        };
+        logger.debug({
+            requestId: options.requestId,
+            message: JSON.stringify(params)
+        });
+        let results = [];
+        let totalScannedCount = 0;
+        let totalItemsMatched = 0;
+        let totalConsumedCapacity = 0;
+        let segment = 1;
+        let lastEvaluatedKey = undefined;
+        let response;
+        do {
+            response = await client.send(new ScanCommand(params));
+            if (response.Items && response.Items.length > 0) {
+                results.push(...response.Items);
+            }
+            totalScannedCount += response.ScannedCount;
+            totalItemsMatched += response.Count;
+            totalConsumedCapacity += response.ConsumedCapacity;
+            lastEvaluatedKey = response.LastEvaluatedKey;
+            params.ExclusiveStartKey = lastEvaluatedKey;
+            if (payload.limit && results.length >= payload.limit) {
+                break;
+            }
+            if (typeof lastEvaluatedKey === "undefined") {
+                segment++;
+            }
+        } while (typeof lastEvaluatedKey !== "undefined" && segment < payload.totalSegments);
+        logger.info({
+            requestId: options.requestId,
+            message: {
+                size: results.length,
+                lastEvaluatedKey: lastEvaluatedKey,
+            },
+        });
+        return {
+            data: results,
+            metadata: {
+                totalScannedCount: totalScannedCount,
+                totalItemsMatched: totalItemsMatched,
+                totalConsumedCapacity: totalConsumedCapacity,
+                lastEvaluatedKey: lastEvaluatedKey,
+                totalSegments: payload.totalSegments,
+                segment: segment
+            }
+        };
     } catch (err) {
         logger.error({
             requestId: options.requestId,
@@ -166,12 +307,20 @@ async function updateItem(payload = {
             requestId: options.requestId,
             message: JSON.stringify(params)
         });
-        const resultData = await client.send(new UpdateItemCommand(params));
+        const response = await client.send(new UpdateItemCommand(params));
         logger.info({
             requestId: options.requestId,
-            message: resultData
+            message: response
         });
-        return resultData;
+        return {
+            data: undefined,
+            metadata: {
+                totalScannedCount: 1,
+                totalItemsMatched: 1,
+                totalConsumedCapacity: response.ConsumedCapacity,
+                lastEvaluatedKey: undefined
+            }
+        };
     } catch (err) {
         logger.error({
             requestId: options.requestId,
@@ -198,12 +347,20 @@ async function deleteItem(payload = {
             requestId: options.requestId,
             message: JSON.stringify(params)
         });
-        const resultData = await client.send(new DeleteItemCommand(params));
+        const response = await client.send(new DeleteItemCommand(params));
         logger.info({
             requestId: options.requestId,
-            message: resultData
+            message: response
         });
-        return resultData;
+        return {
+            data: undefined,
+            metadata: {
+                totalScannedCount: 1,
+                totalItemsMatched: 1,
+                totalConsumedCapacity: response.ConsumedCapacity,
+                lastEvaluatedKey: undefined
+            }
+        };
     } catch (err) {
         logger.error({
             requestId: options.requestId,
@@ -225,20 +382,24 @@ async function putItem(payload = {
             TableName: payload.tableName,
             Item: payload.item
         };
-
         logger.info({
             requestId: options.requestId,
             message: params
         });
-
-        const resultData = await client.send(new PutItemCommand(params));
-
+        const response = await client.send(new PutItemCommand(params));
         logger.info({
             requestId: options.requestId,
-            message: resultData
+            message: response
         });
-
-        return buildItem(params.Item, options.schema);
+        return {
+            data: undefined,
+            metadata: {
+                totalScannedCount: 1,
+                totalItemsMatched: 1,
+                totalConsumedCapacity: response.ConsumedCapacity,
+                lastEvaluatedKey: undefined
+            }
+        };
     } catch (err) {
         logger.error({
             requestId: options.requestId,
@@ -254,5 +415,7 @@ module.exports = {
     getItem: getItem,
     scan: scan,
     deleteItem: deleteItem,
-    updateItem: updateItem
+    updateItem: updateItem,
+    scanCount: scanCount,
+    parallelScan: parallelScan
 }
