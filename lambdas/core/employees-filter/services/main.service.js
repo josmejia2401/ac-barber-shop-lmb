@@ -12,30 +12,28 @@ exports.doAction = async function (event, _context) {
     try {
         logger.info({ message: JSON.stringify(event), requestId: traceID });
         const queryStringParameters = event.queryStringParameters || {};
-        const filterField = commonUtils.buildScanFilterExpression(queryStringParameters, []);
+        const filterField = commonUtils.buildScanFilterExpression(queryStringParameters, ["id", "userId"], ["firstName", "lastName"]);
         let lastEvaluatedKey = undefined;
-        if (queryStringParameters && queryStringParameters.id) {
+        if (queryStringParameters && queryStringParameters.id && queryStringParameters.userId) {
             lastEvaluatedKey = {
                 id: {
                     N: `${queryStringParameters.id}`
+                },
+                userId: {
+                    N: `${queryStringParameters.userId}`
                 }
             }
         }
         const response = await dynamoDBRepository.scan({
-            expressionAttributeValues: filterField.expressionAttributeValues,
-            expressionAttributeNames: filterField.expressionAttributeNames,
+            expressionAttributeValues: commonUtils.isEmpty(filterField.expressionAttributeValues) ? undefined : filterField.expressionAttributeValues,
+            expressionAttributeNames: commonUtils.isEmpty(filterField.expressionAttributeNames) ? undefined : filterField.expressionAttributeNames,
             projectionExpression: undefined,
-            filterExpression: filterField.filterExpression,
+            filterExpression: commonUtils.isEmpty(filterField.filterExpression) ? undefined : filterField.filterExpression,
             limit: 10,
             lastEvaluatedKey: lastEvaluatedKey,
-            tableName: commonConstants.TABLES.users
+            tableName: commonConstants.TABLES.employees
         }, options);
-
-        response.data = response.data.map(p => {
-            const r = commonUtils.parseDynamoDBItem(p);
-            delete r["password"];
-            return r;
-        });
+        response.data = response.data.map(p => commonUtils.parseDynamoDBItem(p));
         return responseHandler.successResponse(response);
     } catch (err) {
         logger.error({ message: err, requestId: traceID });

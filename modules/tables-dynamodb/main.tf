@@ -55,7 +55,7 @@ resource "aws_dynamodb_table" "tbl_employees" {
   }
   attribute {
     name = "userId"
-    type = "S"
+    type = "N"
   }
 
   tags = var.tags
@@ -74,7 +74,7 @@ resource "aws_dynamodb_table" "tbl_suppliers" {
   }
   attribute {
     name = "userId"
-    type = "S"
+    type = "N"
   }
 
   tags = var.tags
@@ -92,7 +92,7 @@ resource "aws_dynamodb_table" "tbl_inventories" {
   }
   attribute {
     name = "userId"
-    type = "S"
+    type = "N"
   }
 
   tags = var.tags

@@ -4,7 +4,8 @@ const {
     GetItemCommand,
     ScanCommand,
     UpdateItemCommand,
-    DeleteItemCommand
+    DeleteItemCommand,
+    QueryCommand
 } = require("@aws-sdk/client-dynamodb");
 const constants = require('../lib/constants');
 const logger = require('../lib/logger');
@@ -51,6 +52,87 @@ async function getItem(payload = {
     }
 }
 
+
+async function query(payload = {
+    keyConditionExpression: undefined,
+    expressionAttributeValues: {},
+    expressionAttributeNames: {},
+    projectionExpression: undefined,
+    filterExpression: undefined,
+    limit: undefined,
+    lastEvaluatedKey: undefined,
+    tableName: undefined
+}, options = {
+    requestId: undefined,
+    schema: undefined,
+}) {
+    try {
+        const params = {
+            KeyConditionExpression: payload.keyConditionExpression,
+            ExpressionAttributeValues: payload.expressionAttributeValues,
+            ExpressionAttributeNames: payload.expressionAttributeNames,
+            ProjectionExpression: payload.projectionExpression,
+            FilterExpression: payload.filterExpression,
+            TableName: payload.tableName,
+            Limit: payload.limit,
+            ExclusiveStartKey: payload.lastEvaluatedKey,
+        };
+        logger.debug({
+            requestId: options.requestId,
+            message: JSON.stringify(params)
+        });
+        let results = [];
+        let totalScannedCount = 0;
+        let totalItemsMatched = 0;
+        let totalConsumedCapacity = 0;
+        let lastEvaluatedKey = undefined;
+        if (payload.limit !== undefined && payload.limit !== null) {
+            let response;
+            do {
+                response = await client.send(new QueryCommand(params));
+                if (response.Items && response.Items.length > 0) {
+                    results.push(...response.Items);
+                }
+                totalScannedCount += response.ScannedCount;
+                totalItemsMatched += response.Count;
+                totalConsumedCapacity += response.ConsumedCapacity;
+                lastEvaluatedKey = response.LastEvaluatedKey;
+                params.ExclusiveStartKey = lastEvaluatedKey;
+            } while (typeof lastEvaluatedKey !== "undefined" && results.length < payload.limit);
+        } else {
+            const response = await client.send(new ScanCommand(params));
+            if (response.Items && response.Items.length > 0) {
+                results.push(...response.Items);
+            }
+            totalScannedCount += response.ScannedCount;
+            totalItemsMatched += response.Count;
+            totalConsumedCapacity += response.ConsumedCapacity;
+            lastEvaluatedKey = response.LastEvaluatedKey;
+        }
+        logger.info({
+            requestId: options.requestId,
+            message: {
+                size: results.length,
+                lastEvaluatedKey: lastEvaluatedKey,
+            },
+        });
+        return {
+            data: results,
+            metadata: {
+                totalScannedCount: totalScannedCount,
+                totalItemsMatched: totalItemsMatched,
+                totalConsumedCapacity: totalConsumedCapacity,
+                lastEvaluatedKey: lastEvaluatedKey
+            }
+        };
+    } catch (err) {
+        logger.error({
+            requestId: options.requestId,
+            message: err
+        });
+        throw err;
+    }
+}
 
 
 async function scan(payload = {
@@ -416,5 +498,6 @@ module.exports = {
     deleteItem: deleteItem,
     updateItem: updateItem,
     scanCount: scanCount,
-    parallelScan: parallelScan
+    parallelScan: parallelScan,
+    query: query
 }
