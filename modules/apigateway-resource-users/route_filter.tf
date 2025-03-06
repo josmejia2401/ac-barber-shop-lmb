@@ -38,7 +38,7 @@ resource "aws_iam_policy" "dynamodb_lambda_policy_users_filter" {
   policy      = data.aws_iam_policy_document.lambda_policy_document_users_filter.json
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_attachements" {
+resource "aws_iam_role_policy_attachment" "lambda_attachements_users_filter" {
   role       = aws_iam_role.lambda_role_users_filter.name
   policy_arn = aws_iam_policy.dynamodb_lambda_policy_users_filter.arn
 }
@@ -77,7 +77,7 @@ resource "aws_apigatewayv2_integration" "lambda_handler_users_filter" {
   api_id           = var.api_id
   integration_type = "AWS_PROXY"
   integration_uri  = aws_lambda_function.html_lambda_users_filter.invoke_arn
-  depends_on       = [aws_apigatewayv2_api.main, aws_lambda_function.html_lambda_users_filter]
+  depends_on       = [aws_lambda_function.html_lambda_users_filter]
 }
 
 resource "aws_apigatewayv2_route" "handler_users_filter" {
@@ -93,5 +93,5 @@ resource "aws_lambda_permission" "api_gw_users_filter" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.html_lambda_users_filter.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+  source_arn    = "${data.aws_apigatewayv2_api.selected.execution_arn}/*/*"
 }

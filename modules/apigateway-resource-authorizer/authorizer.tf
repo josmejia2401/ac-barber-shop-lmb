@@ -49,8 +49,8 @@ resource "aws_iam_role_policy_attachment" "lambda_attachements" {
 
 data "archive_file" "lambda_package_authorizer" {
   type        = "zip"
-  source_dir  = "${path.root}/lambdas/core/authorizer"
-  output_path = "${path.root}/resources/core/authorizer/index.zip"
+  source_dir  = "${path.root}/lambdas/auth/authorizer"
+  output_path = "${path.root}/resources/auth/authorizer/index.zip"
 }
 
 resource "aws_lambda_function" "html_lambda_authorizer" {
@@ -92,6 +92,6 @@ resource "aws_lambda_permission" "allow_api_gw_invoke_authorizer" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.html_lambda_authorizer.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.header_based_authorizer.id}"
+  source_arn    = "${data.aws_apigatewayv2_api.selected.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.header_based_authorizer.id}"
   depends_on    = [aws_apigatewayv2_authorizer.header_based_authorizer]
 }

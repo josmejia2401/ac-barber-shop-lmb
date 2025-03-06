@@ -14,8 +14,8 @@ exports.doAction = async function (event, _context) {
         if (!commonUtils.isEmpty(event.pathParameters)) {
             const pathParameters = event.pathParameters;
             const errorUserValidated = commonUtils.validateUserIdWithToken(event, pathParameters.id);
-            if (!commonUtils.isEmpty(errorUserValidated)) {
-                return errorUserValidated;
+            if (!errorUserValidated) {
+                return globalException.buildBadRequestError('Al parecer la solicitud no es permitida. Intenta nuevamente, por favor.');;
             }
             const response = await dynamoDBRepository.getItem({
                 key: {
@@ -23,14 +23,14 @@ exports.doAction = async function (event, _context) {
                         N: `${pathParameters.id}`
                     }
                 },
-                tableName: commonConstants.TABLES.users
+                tableName: commonConstants.TABLES.users,
             }, options);
             if (!response) {
                 return globalException.buildNotFoundError({});
             }
-            const r = commonUtils.parseDynamoDBItem(response);
-            delete r["password"];
-            return responseHandler.successResponse(r);
+            response.data = commonUtils.parseDynamoDBItem(response.data);
+            delete response.data["password"];
+            return responseHandler.successResponse(response);
         } else {
             return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Intenta nuevamente, por favor.');
         }

@@ -15,10 +15,10 @@ exports.doAction = async function (event, _context) {
         if (!commonUtils.isEmpty(event.pathParameters)) {
             const pathParameters = event.pathParameters;
             const errorUserValidated = commonUtils.validateUserIdWithToken(event, pathParameters.id);
-            if (!commonUtils.isEmpty(errorUserValidated)) {
-                return errorUserValidated;
+            if (!errorUserValidated) {
+                return globalException.buildBadRequestError('Al parecer la solicitud no es permitida. Intenta nuevamente, por favor.');;
             }
-            await dynamoDBRepository.deleteItem({
+            const response = await dynamoDBRepository.deleteItem({
                 key: {
                     id: {
                         N: `${pathParameters.id}`
@@ -26,7 +26,8 @@ exports.doAction = async function (event, _context) {
                 },
                 tableName: commonConstants.TABLES.users
             }, options);
-            return responseHandler.successResponse({ id: Number(pathParameters.id) });
+            response.data = { id: Number(pathParameters.id) };
+            return responseHandler.successResponse(response);
         } else {
             return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Intenta nuevamente, por favor.');
         }

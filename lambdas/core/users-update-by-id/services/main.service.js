@@ -17,8 +17,8 @@ exports.doAction = async function (event, _context) {
         if (!commonUtils.isEmpty(event.pathParameters)) {
             const pathParameters = event.pathParameters;
             const errorUserValidated = commonUtils.validateUserIdWithToken(event, pathParameters.id);
-            if (!commonUtils.isEmpty(errorUserValidated)) {
-                return errorUserValidated;
+            if (!errorUserValidated) {
+                return globalException.buildBadRequestError('Al parecer la solicitud no es permitida. Intenta nuevamente, por favor.');;
             }
             const body = JSON.parse(event.body);
             body["id"] = Number(pathParameters.id);
@@ -28,7 +28,10 @@ exports.doAction = async function (event, _context) {
             }
             // ID no se debe actualizar
             const itemToUpdate = commonUtils.buildUpdateExpression(body, ['id']);
-            await dynamoDBRepository.updateItem({
+            if (commonUtils.isEmpty(itemToUpdate)) {
+                return globalException.buildBadRequestError('Ups! No hay datos para actualizar.');
+            }
+            const response = await dynamoDBRepository.updateItem({
                 key: {
                     id: {
                         N: `${body.id}`
@@ -41,7 +44,9 @@ exports.doAction = async function (event, _context) {
                 filterExpression: "attribute_exists(id)",
                 tableName: commonConstants.TABLES.users
             }, options);
-            return responseHandler.successResponse(body);
+            delete body["password"];
+            response.data = body;
+            return responseHandler.successResponse(response);
         } else {
             return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Intenta nuevamente, por favor.');
         }

@@ -31,7 +31,7 @@ async function getItem(payload = {
         const response = await client.send(new GetItemCommand(params));
         logger.info({
             requestId: options.requestId,
-            message: results.Item !== undefined
+            message: response.Item !== undefined
         });
         return {
             data: response.Item,
@@ -408,7 +408,6 @@ async function putItem(payload = {
         throw err;
     }
 }
-
 
 module.exports = {
     putItem: putItem,

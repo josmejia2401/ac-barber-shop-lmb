@@ -2,8 +2,12 @@
 
 data "aws_iam_policy_document" "lambda_policy_document_users_create" {
   statement {
-    actions   = ["dynamodb:Scan", "dynamodb:PutItem"]
-    resources = ["arn:aws:dynamodb:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:table/tbl-${var.app_name}-users-${var.env}"]
+    actions = [
+      "dynamodb:Scan", "dynamodb:PutItem"
+    ]
+    resources = [
+      "arn:aws:dynamodb:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:table/tbl-${var.app_name}-users-${var.env}"
+    ]
   }
 }
 
@@ -34,7 +38,7 @@ resource "aws_iam_policy" "dynamodb_lambda_policy_users_create" {
   policy      = data.aws_iam_policy_document.lambda_policy_document_users_create.json
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_attachements" {
+resource "aws_iam_role_policy_attachment" "lambda_attachements_users_create" {
   role       = aws_iam_role.lambda_role_users_create.name
   policy_arn = aws_iam_policy.dynamodb_lambda_policy_users_create.arn
 }
@@ -73,7 +77,7 @@ resource "aws_apigatewayv2_integration" "lambda_handler_users_create" {
   api_id           = var.api_id
   integration_type = "AWS_PROXY"
   integration_uri  = aws_lambda_function.html_lambda_users_create.invoke_arn
-  depends_on       = [aws_apigatewayv2_api.main, aws_lambda_function.html_lambda_users_create]
+  depends_on       = [aws_lambda_function.html_lambda_users_create]
 }
 
 resource "aws_apigatewayv2_route" "handler_users_create" {
@@ -89,5 +93,5 @@ resource "aws_lambda_permission" "api_gw_users_create" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.html_lambda_users_create.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+  source_arn    = "${data.aws_apigatewayv2_api.selected.execution_arn}/*/*"
 }

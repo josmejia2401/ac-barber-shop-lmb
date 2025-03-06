@@ -37,14 +37,16 @@ exports.doAction = async function (event, _context) {
                 limit: 1,
                 lastEvaluatedKey: undefined,
             }, options);
-            if (usernameExists.results.length > 0) {
+            if (usernameExists.data.length > 0) {
                 return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Usuario invalido.');
             }
             const response = await dynamoDBRepository.putItem({
                 tableName: commonConstants.TABLES.users,
                 item: commonUtils.mapToDynamoDBFormat(body)
             }, options);
-            return responseHandler.successResponse(commonUtils.parseDynamoDBItem(response));
+            delete body["password"];
+            response.data = body;
+            return responseHandler.successResponse(response);
         } else {
             return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Intenta nuevamente, por favor.');
         }

@@ -30,7 +30,12 @@ exports.doAction = async function (event, _context) {
             lastEvaluatedKey: lastEvaluatedKey,
             tableName: commonConstants.TABLES.users
         }, options);
-        response.results = response.results.map(p => commonUtils.parseDynamoDBItem(p));
+
+        response.data = response.data.map(p => {
+            const r = commonUtils.parseDynamoDBItem(p);
+            delete r["password"];
+            return r;
+        });
         return responseHandler.successResponse(response);
     } catch (err) {
         logger.error({ message: err, requestId: traceID });

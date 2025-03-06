@@ -7,10 +7,15 @@ async function test() {
         body: JSON.stringify({
             firstName: 'nombre de la empresa o administrador',
             lastName: 'lastName',
-            email: 'email@email.com',
-            username: '3105397699',
+            email: 'email1@email.com',
+            username: '31053976991',
             password: '1',
-            createdAt: new Date()
+            createdAt: new Date().toISOString(),
+            documentTypeId: "CE",
+            documentNumber: "12345",
+            preferences: {
+                currency: 'COP'
+            }
         })
     };
     const context = {

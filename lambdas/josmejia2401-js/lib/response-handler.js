@@ -9,7 +9,7 @@ exports.successResponse = function (payload) {
         body: JSON.stringify({
             code: 200,
             message: "Successful operation",
-            ...payload
+            ...payload,
         }),
     };
 }

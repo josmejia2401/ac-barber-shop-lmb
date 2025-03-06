@@ -1,5 +1,5 @@
-const { commonUtils, globalException } = require("..");
-
+const { JWT } = require("./jwt");
+const logger = require("./logger");
 /**
  * Genera un número único de n dígitos sin almacenar estado entre invocaciones.
  * Se combina una parte derivada del timestamp actual y una parte aleatoria.
@@ -37,7 +37,7 @@ function generateUniqueNumber(n) {
         const newFirstDigit = (Math.floor(Math.random() * 9) + 1).toString();
         result = newFirstDigit + result.slice(1);
     }
-    return result;
+    return Number(result);
 }
 
 exports.buildUuid = function () {
@@ -48,9 +48,11 @@ exports.getTraceID = function (headers) {
     return headers["x-amzn-trace-id"] || headers["X-Amzn-Trace-Id"] || "unset";
 }
 
-exports.getAuthorization = function (event) {
+function getAuthorization(event) {
     return event.headers?.Authorization || event.headers?.authorization || event.authorizationToken;
 }
+
+exports.getAuthorization = getAuthorization;
 
 exports.isEmpty = function (value) {
     // Comprobar si el valor es undefined, null o vacío
@@ -183,6 +185,9 @@ exports.buildUpdateExpression = function (payload, ignoreKeys = []) {
             expressionAttributeValues[attrValue] = convertValueToDynamoDBFormat(payload[key]);
         }
     });
+    if (updateExpression.charAt(updateExpression.length - 1) === ',') {
+        updateExpression = updateExpression.substring(0, updateExpression.length - 1);
+    }
     return {
         updateExpression: updateExpression,
         expressionAttributeNames: expressionAttributeNames,
@@ -191,13 +196,13 @@ exports.buildUpdateExpression = function (payload, ignoreKeys = []) {
 }
 
 exports.validateUserIdWithToken = function (event, userId) {
-    const authorization = commonUtils.getAuthorization(event);
+    const authorization = getAuthorization(event);
     const tokenDecoded = JWT.decodeToken(authorization);
-    logger.info({ requestId: traceID, message: { keyid: tokenDecoded.keyid, id: Number(userId) } });
+    logger.info({ requestId: undefined, message: { keyid: tokenDecoded.keyid, id: Number(userId) } });
     if (Number(tokenDecoded?.keyid) !== Number(userId)) {
-        return globalException.buildBadRequestError('Al parecer la solicitud no es permitida. Intenta nuevamente, por favor.');
+        return false;
     }
-    return undefined;
+    return true;
 }
 
 /**

@@ -2,10 +2,10 @@ const { handler } = require('../index');
 async function test() {
     const event = {
         headers: {
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lMyIsImtleWlkIjoiOTBjZjhmMDUtY2Q5Ny00NDkyLWFiYTktNDg2ZDI2ZGE5NDJhIiwiaWF0IjoxNzIxNzU0MjU0LCJleHAiOjE3NTMyOTAyNTQsImF1ZCI6ImFwcG1hIiwiaXNzIjoiZmlyc3ROYW1lIiwic3ViIjoidXNlcm5hbWUzIiwianRpIjoiNTY2OTQxZDktZTMxNi00ZjNlLWJmZTgtNDkzNDE0ZmY5MWI4In0.L7BwzwEMsRUkiaNNSZ57WByhUb8Ztbi3hGylUKjAi78'
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lMyIsImtleWlkIjoiMzgzMjE5MjIzMiIsImlhdCI6MTcyMTc1NDI1NCwiZXhwIjoxNzUzMjkwMjU0LCJhdWQiOiJhcHBtYSIsImlzcyI6ImZpcnN0TmFtZSIsInN1YiI6InVzZXJuYW1lMyIsImp0aSI6IjU2Njk0MWQ5LWUzMTYtNGYzZS1iZmU4LTQ5MzQxNGZmOTFiOCJ9.HkWOOh3tt_rHDK4NOffp67e2Ilu3wm1t3pKdbXyLbu0"
         },
         queryStringParameters: {
-            firstName: "nombre"
+            firstName: "nombre de la empresa o administrador"
         }
     };
     const context = {

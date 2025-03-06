@@ -38,7 +38,7 @@ resource "aws_iam_policy" "dynamodb_lambda_policy_users_delete_by_id" {
   policy      = data.aws_iam_policy_document.lambda_policy_document_users_delete_by_id.json
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_attachements" {
+resource "aws_iam_role_policy_attachment" "lambda_attachements_users_delete" {
   role       = aws_iam_role.lambda_role_users_delete_by_id.name
   policy_arn = aws_iam_policy.dynamodb_lambda_policy_users_delete_by_id.arn
 }
@@ -77,7 +77,7 @@ resource "aws_apigatewayv2_integration" "lambda_handler_users_delete_by_id" {
   api_id           = var.api_id
   integration_type = "AWS_PROXY"
   integration_uri  = aws_lambda_function.html_lambda_users_delete_by_id.invoke_arn
-  depends_on       = [aws_apigatewayv2_api.main, aws_lambda_function.html_lambda_users_delete_by_id]
+  depends_on       = [aws_lambda_function.html_lambda_users_delete_by_id]
 }
 
 resource "aws_apigatewayv2_route" "handler_users_delete_by_id" {
@@ -93,5 +93,5 @@ resource "aws_lambda_permission" "api_gw_users_delete_by_id" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.html_lambda_users_delete_by_id.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+  source_arn    = "${data.aws_apigatewayv2_api.selected.execution_arn}/*/*"
 }
