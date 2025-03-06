@@ -1,5 +1,4 @@
 const { JWT, logger, commonUtils, dynamoDBRepository, commonConstants } = require('josmejia2401-js');
-const constants = require('./utils/contants');
 
 exports.handler = async (event) => {
     const traceId = commonUtils.getTraceID(event.headers || {});
@@ -15,44 +14,29 @@ exports.handler = async (event) => {
         if (authorization && JWT.isValidToken(authorization)) {
             const tokenDecoded = JWT.decodeToken(authorization);
             const options = {
-                requestId: traceId,
-                schema: {
-                    id: {
-                        S: ''
-                    },
-                    accessToken: {
-                        S: ''
-                    },
-                    userId: {
-                        S: ''
-                    },
-                    createdAt: {
-                        S: ''
-                    }
-                }
+                requestId: traceId
             };
-            const resultData = await dynamoDBRepository.getItem({
+            const responseToken = await dynamoDBRepository.getItem({
                 key: {
                     id: {
-                        S: `${tokenDecoded.jti}`
+                        N: `${tokenDecoded.jti}`
                     }
                 },
                 projectionExpression: 'id, accessToken, userId, createdAt',
                 tableName: commonConstants.TABLES.token
             }, options);
-
-            if (resultData &&
-                tokenDecoded.keyid === resultData.userId.S &&
-                resultData.accessToken.S === JWT.getOnlyToken(authorization)) {
+            if (responseToken &&
+                Number(tokenDecoded.keyid) === Number(responseToken.data.userId.N) &&
+                responseToken.data.accessToken.S === JWT.getOnlyToken(authorization)) {
                 response.isAuthorized = true;
-            } else if (resultData && resultData.id) {
+            } else if (responseToken && responseToken.data.id && responseToken.data.id.N) {
                 await dynamoDBRepository.deleteItem({
                     key: {
                         id: {
-                            S: resultData.id.S
+                            N: responseToken.data.id.N
                         }
                     },
-                    tableName: constants.TBL_TOKEN
+                    tableName: commonConstants.TABLES.token
                 }, options);
             }
         }

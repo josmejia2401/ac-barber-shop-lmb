@@ -3,52 +3,49 @@ async function test() {
     const event = {
         "version": "2.0",
         "type": "REQUEST",
-        "routeArn": "arn:aws:execute-api:us-east-1:123456789012:abcdef123/test/GET/request",
-        "identitySource": ["user1", "123"],
-        "routeKey": "$default",
-        "rawPath": "/my/path",
-        "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
-        "cookies": ["cookie1", "cookie2"],
+        "routeArn": "arn:aws:execute-api:us-east-1:233925838033:u83oit2sq6/dev/GET/api/v1/employees",
+        "identitySource": [
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIiwia2V5aWQiOiIzODcxNzA5MTkxIiwiaWF0IjoxNzQxMjk4MjY4LCJleHAiOjE3NzI4MzQyNjgsImF1ZCI6ImNlbGVzdGUiLCJpc3MiOiJub21icmUgZGUgbGEgZW1wcmVzYSBvIGFkbWluaXN0cmFkb3IiLCJzdWIiOiJ1c2VybmFtZSIsImp0aSI6IjY4NzM4MTU4MjgifQ.-t0JxJhvkXE5D1KtRmNjS43us6rHD4x5eKxkA9D8Qr4"
+        ],
+        "routeKey": "GET /api/v1/employees",
+        "rawPath": "/dev/api/v1/employees",
+        "rawQueryString": "",
         "headers": {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Impvc2UyNDAxIiwia2V5aWQiOiIxMTYwMTIxNjkyMjEyNTYiLCJpYXQiOjE3MzE1Mjc0ODksImV4cCI6MTc2MzA2MzQ4OSwiYXVkIjoiYXBwbWEiLCJpc3MiOiJKT1NFIiwic3ViIjoiam9zZTI0MDEiLCJqdGkiOiIxMTYwMTIzNDE3ODc2NTUifQ.2wGGHwUbZOgYfElvgLeC-8LiZTEfDG6HoMgchTr7YEo",
-            "header2": "value2"
-        },
-        "queryStringParameters": {
-            "parameter1": "value1,value2",
-            "parameter2": "value"
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "es-US,es;q=0.9,en-US;q=0.8,en;q=0.7",
+            "access-control-allow-origin": "*",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lIiwia2V5aWQiOiIzODcxNzA5MTkxIiwiaWF0IjoxNzQxMjk4MjY4LCJleHAiOjE3NzI4MzQyNjgsImF1ZCI6ImNlbGVzdGUiLCJpc3MiOiJub21icmUgZGUgbGEgZW1wcmVzYSBvIGFkbWluaXN0cmFkb3IiLCJzdWIiOiJ1c2VybmFtZSIsImp0aSI6IjY4NzM4MTU4MjgifQ.-t0JxJhvkXE5D1KtRmNjS43us6rHD4x5eKxkA9D8Qr4",
+            "cache-control": "no-cache",
+            "content-length": "0",
+            "host": "u83oit2sq6.execute-api.us-east-1.amazonaws.com",
+            "origin": "http://localhost:3000",
+            "pragma": "no-cache",
+            "priority": "u=1, i",
+            "referer": "http://localhost:3000/",
+            "x-amzn-trace-id": "Root=1-67ca15dd-2c0a817c66bc51170d41e490",
+            "x-forwarded-for": "200.118.62.44",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https"
         },
         "requestContext": {
-            "accountId": "123456789012",
-            "apiId": "api-id",
-            "authentication": {
-                "clientCert": {
-                    "clientCertPem": "CERT_CONTENT",
-                    "subjectDN": "www.example.com",
-                    "issuerDN": "Example issuer",
-                    "serialNumber": "1",
-                    "validity": {
-                        "notBefore": "May 28 12:30:02 2019 GMT",
-                        "notAfter": "Aug  5 09:36:04 2021 GMT"
-                    }
-                }
-            },
-            "domainName": "id.execute-api.us-east-1.amazonaws.com",
-            "domainPrefix": "id",
+            "accountId": "233925838033",
+            "apiId": "u83oit2sq6",
+            "domainName": "u83oit2sq6.execute-api.us-east-1.amazonaws.com",
+            "domainPrefix": "u83oit2sq6",
             "http": {
-                "method": "POST",
-                "path": "/my/path",
+                "method": "GET",
+                "path": "/dev/api/v1/employees",
                 "protocol": "HTTP/1.1",
-                "sourceIp": "IP",
-                "userAgent": "agent"
+                "sourceIp": "200.118.62.44",
+                "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
             },
-            "requestId": "id",
-            "routeKey": "$default",
-            "stage": "$default",
-            "time": "12/Mar/2020:19:03:58 +0000",
-            "timeEpoch": 1583348638390
-        },
-        "pathParameters": { "parameter1": "value1" },
-        "stageVariables": { "stageVariable1": "value1", "stageVariable2": "value2" }
+            "requestId": "HBhapgCqoAMEJ0w=",
+            "routeKey": "GET /api/v1/employees",
+            "stage": "dev",
+            "time": "06/Mar/2025:21:38:37 +0000",
+            "timeEpoch": 1741297117303
+        }
     };
     const context = {
         awsRequestId: "1"
