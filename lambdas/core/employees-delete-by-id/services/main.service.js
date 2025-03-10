@@ -37,7 +37,7 @@ exports.doAction = async function (event, _context) {
                 filterExpression: "attribute_exists(id)",
                 tableName: commonConstants.TABLES.employees
             }, options);
-            response.data = { id: Number(pathParameters.id), statusId: "ELI" };
+            response.data = { id: Number(event.pathParameters.id), statusId: "ELI" };
             return responseHandler.successResponse(response);
         } else {
             return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Intenta nuevamente, por favor.');
