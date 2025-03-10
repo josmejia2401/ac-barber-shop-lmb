@@ -34,6 +34,7 @@ exports.doAction = async function (event, _context) {
             tableName: commonConstants.TABLES.employees
         }, options);
         response.data = response.data.map(p => commonUtils.parseDynamoDBItem(p));
+        response.metadata.lastEvaluatedKey = response.metadata.lastEvaluatedKey ? commonUtils.parseDynamoDBItem(response.metadata.lastEvaluatedKey) : undefined;
         return responseHandler.successResponse(response);
     } catch (err) {
         logger.error({ message: err, requestId: traceID });
