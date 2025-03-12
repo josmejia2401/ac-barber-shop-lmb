@@ -1,0 +1,27 @@
+{
+    "name": "appointment-management-lmb",
+    "version": "1.0.0",
+    "description": "Lambda para el inicio de sesión en el sistema",
+    "main": "index.js",
+    "type": "commonjs",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/josmejia2401/appointment-management-lmb.git"
+    },
+    "author": "jose.mejia",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/josmejia2401/appointment-management-lmb/issues"
+    },
+    "homepage": "https://github.com/josmejia2401/appointment-management-lmb#readme",
+    "dependencies": {
+        "joi": "17.13.3",
+        "josmejia2401-js": "file:../../josmejia2401-js"
+    },
+    "devDependencies": {
+        "@aws-sdk/client-dynamodb": "3.637.0"
+    }
+}

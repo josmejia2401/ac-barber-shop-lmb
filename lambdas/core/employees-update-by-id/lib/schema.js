@@ -2,7 +2,7 @@ const { joi } = require('josmejia2401-js');
 exports.schema = joi.object({
     id: joi.number().required(),
     userId: joi.number().required(),
-    firstName: joi.string().max(100).allow("").optional(),
+    firstName: joi.string().max(100).allow("").empty(null).optional(),
     lastName: joi.string().max(100).allow("").optional(),
     documentTypeId: joi.string().max(5).allow("").optional(),
     documentNumber: joi.string().max(20).allow("").optional(),
@@ -23,7 +23,9 @@ exports.schema = joi.object({
         department: joi.string().max(75).allow("").optional(),
         dateHiring: joi.string().max(19).allow("").optional(),
         typeContractId: joi.string().max(5).allow("").optional(),
-        directBoss: joi.string().max(100).allow("").optional()
+        directBoss: joi.string().max(100).allow("").optional(),
+        salary: joi.number().allow(0).optional(),
+        paymentTypeId: joi.string().max(5).allow("").optional(),
     }).optional(),
     bankingInformation: joi.object({
         bankAccountNumber: joi.string().max(20).allow("").optional(),

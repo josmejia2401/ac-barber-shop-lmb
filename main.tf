@@ -62,3 +62,10 @@ module "apigateway_resource_employees" {
   api_id        = module.apigateway.api_id                               # < output of module.api_gateway
   authorizer_id = module.apigateway_resource_authorization.authorizer_id # < output of module.apigateway_resource_authorization
 }
+
+module "apigateway_resource_customers" {
+  source        = "./modules/apigateway-resource-customers"
+  depends_on    = [module.tables_dynamodb, module.apigateway, module.apigateway_resource_authorization]
+  api_id        = module.apigateway.api_id                               # < output of module.api_gateway
+  authorizer_id = module.apigateway_resource_authorization.authorizer_id # < output of module.apigateway_resource_authorization
+}
