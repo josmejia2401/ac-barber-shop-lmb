@@ -18,7 +18,7 @@ exports.schema = joi.object({
     }).optional(),
     segmentationAndTags: joi.object({
         customerTypeId: joi.string().max(5).allow("").optional(),
-        tags: joi.array().items(joi.string()).empty(joi.array().length(0))
+        customerTags: joi.array().items(joi.string()).empty(joi.array().length(0))
     }).optional(),
     preferences: joi.object({
         communicationChannel: joi.string().max(100).allow("").optional(),
