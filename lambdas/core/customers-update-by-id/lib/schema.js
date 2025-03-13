@@ -18,12 +18,11 @@ exports.schema = joi.object({
     }).optional(),
     segmentationAndTags: joi.object({
         customerTypeId: joi.string().max(5).allow("").optional(),
-        tags: joi.array().items(joi.string()).empty(joi.array().length(0))
+        customerTags: joi.array().items(joi.string()).empty(joi.array().length(0)).optional(),
     }).optional(),
     preferences: joi.object({
-        communicationChannel: joi.string().max(100).allow("").optional(),
-        acceptPromotions: joi.boolean().allow("").optional(),
-        favoriteCategories: joi.array().items(joi.string()).empty(joi.array().length(0))
+        communicationChannels: joi.array().items(joi.string()).empty(joi.array().length(0)).optional(),
+        favoriteCategories: joi.array().items(joi.string()).empty(joi.array().length(0)).optional(),
     }).optional(),
     additionalInformation: joi.object({
         description: joi.string().max(200).allow("").optional(),
