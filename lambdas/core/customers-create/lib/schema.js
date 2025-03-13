@@ -21,8 +21,7 @@ exports.schema = joi.object({
         customerTags: joi.array().items(joi.string()).empty(joi.array().length(0))
     }).optional(),
     preferences: joi.object({
-        communicationChannel: joi.string().max(100).allow("").optional(),
-        acceptPromotions: joi.boolean().allow("").optional(),
+        communicationChannels: joi.array().items(joi.string()).empty(joi.array().length(0)),
         favoriteCategories: joi.array().items(joi.string()).empty(joi.array().length(0))
     }).optional(),
     additionalInformation: joi.object({
