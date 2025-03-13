@@ -25,38 +25,24 @@ exports.doAction = async function (event, _context) {
             if (errorBadRequest) {
                 return errorBadRequest;
             }
-            if (!commonUtils.isEmpty(body.documentTypeId) && !commonUtils.isEmpty(body.documentNumber)) {
-                const usernameExists = await dynamoDBRepository.query({
-                    tableName: commonConstants.TABLES.customers,
-                    keyConditionExpression: "#id=:id AND #userId=:userId",
-                    expressionAttributeValues: {
-                        ":documentTypeId": {
-                            "S": `${body.documentTypeId}`
-                        },
-                        ":documentNumber": {
-                            "S": `${body.documentNumber}`
-                        },
-                        ":id": {
-                            "N": `${body["id"]}`
-                        },
-                        ":userId": {
-                            "N": `${tokenDecoded?.keyid}`
-                        }
+            const usernameExists = await dynamoDBRepository.getItem({
+                tableName: commonConstants.TABLES.customers,
+                key: {
+                    "id": {
+                        "N": `${body["id"]}`
                     },
-                    expressionAttributeNames: {
-                        "#documentTypeId": "documentTypeId",
-                        "#documentNumber": "documentNumber",
-                        "#id": "id",
-                        "#userId": "userId"
-                    },
-                    projectionExpression: "id, userId",
-                    filterExpression: '#documentTypeId=:documentTypeId AND #documentNumber=:documentNumber',
-                    limit: 1,
-                    lastEvaluatedKey: undefined,
-                }, options);
-                if (usernameExists.data.length > 0) {
-                    return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Cliente ya existe.');
-                }
+                    "userId": {
+                        "N": `${tokenDecoded?.keyid}`
+                    }
+                },
+                expressionAttributeNames: {
+                    "#id": "id",
+                    "#userId": "userId"
+                },
+                projectionExpression: "id, userId"
+            }, options);
+            if (usernameExists.data.length === 0) {
+                return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Cliente no existe.');
             }
             // ID no se debe actualizar
             const itemToUpdate = commonUtils.buildUpdateExpression(body, ['id', 'userId']);

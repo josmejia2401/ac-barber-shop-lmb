@@ -3,7 +3,7 @@
 data "aws_iam_policy_document" "lambda_policy_document_customers_update" {
   statement {
     actions = [
-      "dynamodb:UpdateItem"
+      "dynamodb:UpdateItem", "dynamodb:GetItem", "dynamodb:Scan"
     ]
     resources = [
       "arn:aws:dynamodb:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:table/tbl-${var.app_name}-customers-${var.env}"
