@@ -11,7 +11,13 @@ exports.doAction = async function (event, _context) {
     const options = { requestId: traceID };
     try {
         logger.info({ message: JSON.stringify(event), requestId: traceID });
+        const authorization = commonUtils.getAuthorization(event);
+        const tokenDecoded = JWT.decodeToken(authorization);
+        const userId = Number(tokenDecoded?.keyid);
         const queryStringParameters = event.queryStringParameters || {};
+        if (commonUtils.isEmpty(queryStringParameters.customerId)) {
+            return globalException.buildBadRequestError('Al parecer la solicitud no es correcta. Intenta nuevamente, por favor.');
+        }
         let lastEvaluatedKey = undefined;
         if (queryStringParameters && queryStringParameters.id && queryStringParameters.userId) {
             lastEvaluatedKey = {
@@ -23,7 +29,7 @@ exports.doAction = async function (event, _context) {
                 }
             }
         }
-        const filterField = commonUtils.buildScanFilterExpression(queryStringParameters, ["id", "userId"], ["firstName", "lastName"]);
+        const filterField = commonUtils.buildScanFilterExpression(queryStringParameters, ["id", "userId"], []);
         filterField.expressionAttributeValues = filterField.expressionAttributeValues || {};
         filterField.expressionAttributeNames = filterField.expressionAttributeNames || {};
         filterField.filterExpression = filterField.filterExpression || "";
@@ -41,6 +47,7 @@ exports.doAction = async function (event, _context) {
             "#userId=:userId"
             :
             filterField.filterExpression.concat(" AND ").concat("#userId=:userId");
+
         const response = await dynamoDBRepository.scan({
             expressionAttributeValues: commonUtils.isEmpty(filterField.expressionAttributeValues) ? undefined : filterField.expressionAttributeValues,
             expressionAttributeNames: commonUtils.isEmpty(filterField.expressionAttributeNames) ? undefined : filterField.expressionAttributeNames,

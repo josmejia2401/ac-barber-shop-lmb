@@ -97,3 +97,22 @@ resource "aws_dynamodb_table" "tbl_inventories" {
 
   tags = var.tags
 }
+
+
+resource "aws_dynamodb_table" "tbl_transaction_history" {
+  name         = local.tbl_transaction_history
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+  range_key    = "userId"
+
+  attribute {
+    name = "id"
+    type = "N"
+  }
+  attribute {
+    name = "userId"
+    type = "N"
+  }
+
+  tags = var.tags
+}

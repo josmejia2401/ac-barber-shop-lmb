@@ -13,6 +13,7 @@ const CONSTANTS = {
         users: `tbl-${APP_NAME}-users-${ENVIRONMENT}`,
         token: `tbl-${APP_NAME}-token-${ENVIRONMENT}`,
         customers: `tbl-${APP_NAME}-customers-${ENVIRONMENT}`,
+        transactionHistory: `tbl-${APP_NAME}-transaction-history-${ENVIRONMENT}`,
         employees: `tbl-${APP_NAME}-employees-${ENVIRONMENT}`,
         suppliers: `tbl-${APP_NAME}-suppliers-${ENVIRONMENT}`,
         inventories: `tbl-${APP_NAME}-inventories-${ENVIRONMENT}`,

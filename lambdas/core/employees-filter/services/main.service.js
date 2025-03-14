@@ -12,7 +12,6 @@ exports.doAction = async function (event, _context) {
     try {
         logger.info({ message: JSON.stringify(event), requestId: traceID });
         const queryStringParameters = event.queryStringParameters || {};
-        const filterField = commonUtils.buildScanFilterExpression(queryStringParameters, ["id", "userId"], ["firstName", "lastName"]);
         let lastEvaluatedKey = undefined;
         if (queryStringParameters && queryStringParameters.id && queryStringParameters.userId) {
             lastEvaluatedKey = {
@@ -24,6 +23,24 @@ exports.doAction = async function (event, _context) {
                 }
             }
         }
+        const filterField = commonUtils.buildScanFilterExpression(queryStringParameters, ["id", "userId"], ["firstName", "lastName"]);
+        filterField.expressionAttributeValues = filterField.expressionAttributeValues || {};
+        filterField.expressionAttributeNames = filterField.expressionAttributeNames || {};
+        filterField.filterExpression = filterField.filterExpression || "";
+        filterField.expressionAttributeValues = {
+            ...filterField.expressionAttributeValues,
+            ":userId": {
+                N: `${userId}`
+            }
+        };
+        filterField.expressionAttributeNames = {
+            ...filterField.expressionAttributeNames,
+            "#userId": "userId"
+        };
+        filterField.filterExpression = commonUtils.isEmpty(filterField.filterExpression) ?
+            "#userId=:userId"
+            :
+            filterField.filterExpression.concat(" AND ").concat("#userId=:userId");
         const response = await dynamoDBRepository.scan({
             expressionAttributeValues: commonUtils.isEmpty(filterField.expressionAttributeValues) ? undefined : filterField.expressionAttributeValues,
             expressionAttributeNames: commonUtils.isEmpty(filterField.expressionAttributeNames) ? undefined : filterField.expressionAttributeNames,
