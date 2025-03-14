@@ -3,7 +3,7 @@ exports.schema = joi.object({
     id: joi.number().required(),
     userId: joi.number().required(),
     customerId: joi.number().required(),
-    typeId: joi.string().max(5).allow("").optional(),
+    transactionTypeId: joi.string().max(5).allow("").optional(),
     totalAmount: joi.number().allow(0).optional(),
     statusId: joi.string().max(5).allow("").optional(),
     createdAt: joi.string().max(24).allow("").optional(),
